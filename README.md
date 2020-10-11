@@ -1,8 +1,8 @@
 # CS148Resources
 
-##backend
+## backend
 This is a sample Python3 Flask app with a simple GET and POST (with CORS setup).  
-###One Time Setup
+### One Time Setup
 First create a virtual environment in a folder called env and install the packages.
 ```
 cd backend
@@ -14,7 +14,7 @@ pip install -r requirements.txt
 deactivate
 ```
 
-###Run
+### Run
 Activate the virtual environment if it is not already activated (ie there is no *(env)* in your prompt.
 ```
 cd backend
@@ -27,7 +27,7 @@ export PORT=8118
 cd backend
 python myapp.py
 ```
-###Test
+### Test
 Test that it works via
 ```
 curl http://localhost:8118/api/getmsg/?msg=Bob
