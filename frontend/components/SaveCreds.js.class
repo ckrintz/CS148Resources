@@ -1,0 +1,87 @@
+import React, {Component} from 'react';
+
+class CredsForm extends Component {
+    constructor(props) { 
+	super(props)
+        this.state = {
+		acckey: "",
+		seckey: ""
+	}
+
+	//bind any methods that access state object 
+	//if you get an error like "...cant read the property of setstate on undefined", you forgot the bind
+	this.handleChange  = this.handleChange.bind(this)
+	this.saveCreds  = this.saveCreds.bind(this)
+    }
+
+    handleChange(evt) { //class function: store change to form text boxes to state
+       //pull out ("deconstruct") the properties of event that you will use
+       const name = evt.target.name //defined in render
+       const value = evt.target.value //defined in render
+
+       //use the properties to set state properties
+       //hard brackets ([name]) create a dynamic key name using the value that name holds: either acckey or seckey here
+       this.setState({ [name]: value })
+	//more info on setState: https://reactjs.org/docs/faq-state.html
+    }
+
+    saveCreds(evt) {  //class function: send creds to backend
+	evt.preventDefault(); //used for button, input, form elements to prevent reload/refresh (default html/browser behavior)
+	    
+	//back quotes enclose a string literal -- use ${...} to get to javascript variable values within string literals
+        alert(`Submitting ${this.state.acckey} and ${this.state.seckey}`)
+	
+        let server = "http://localhost:8118/api"
+        if (process.env.REACT_APP_REMOTE) { //set this in .env file: REACT_APP_REMOTE=1
+            server = "https://cjk-flasktest.herokuapp.com/api"
+	}
+        if (process.env.NODE_ENV !== 'development') {
+            server = "https://cjk-flasktest.herokuapp.com/api"
+	}
+	console.log("server = "+server)
+        const url = `${server}/keys`
+	const bd = JSON.stringify({ "acckey":this.state.acckey, "seckey":this.state.seckey })
+        fetch(url, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },           
+            body: bd     
+	  }).then(response => response.json()) 
+	  .then(data => {
+		  console.log("SaveCreds saveCreds: Fetch Response data: ")
+		  console.log(data) //don't log an object WITH a string else the conversion won't work and object will not be dumped
+		  alert('response: ' + data["MESSAGE"])
+	  }).catch((error) => console.log("SaveCreds saveCreds: Fetch Failure (is server up?): "+ error))
+    }
+
+    //See this example on Creating Custom Hooks at  https://rangle.io/blog/simplifying-controlled-inputs-with-hooks/ to preclude the need to add a function handleChange for each onChange event
+    render() {
+      return(
+      <div> {/* JSX comments look like this */}
+      {/*print out the NODE_ENV set by the server and our user defined REACT_APP_REMOTE variable value (no value means its undefined) */}
+      <h3>Server: {process.env.NODE_ENV}, REACT_APP_REMOTE = {process.env.REACT_APP_REMOTE} </h3>
+      <form onSubmit={this.saveCreds}>
+        <label>
+          Access Key:
+          <input 
+	    type="text" 
+	    value={this.state.acckey}
+	    name="acckey" 
+	    onChange={this.handleChange} />
+        </label>
+        <label>
+          Secret Key:
+          <input 
+	    type="text" 
+	    value={this.state.seckey} 
+	    name="seckey" 
+	    onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+      </div>
+    )}
+}
+export default CredsForm;
