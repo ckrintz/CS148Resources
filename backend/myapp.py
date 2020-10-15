@@ -7,6 +7,7 @@
 
 import os, json
 from flask import Flask, request, jsonify, make_response
+from werkzeug.security import generate_password_hash, check_password_hash
 
 #use this if linking to a reaact app on the same server
 #app = Flask(__name__, static_folder='./build', static_url_path='/')
@@ -75,11 +76,13 @@ def postit():
         except ValueError:
             return jsonify({"MESSAGE": "JSON load error"}),405
     acc = data['acckey']
+    acchash = generate_password_hash(acc)
     sec = data['seckey']
+    sechash = generate_password_hash(sec)
     if DEBUG:
-        print("POST: acc={}, sec={}".format(acc,sec))
+        print("POST: acc={}, sec={}".format(acchash,sechash)) #never print actual keys
     if acc:
-        response["MESSAGE"]= "Welcome! POST args are {} and {}".format(acc,sec)
+        response["MESSAGE"]= "Welcome! POST args are {} and {}".format(acchash,sechash)
         status = 200
     else:
         response["MESSAGE"]= "No acckey or seckey keys found, please resend."
