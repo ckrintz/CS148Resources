@@ -5,8 +5,16 @@ function CredsForm(props) {
     //updateState (name it anything you want) is a function we'll use to update this state object below
     const [state, updateState] = useState({
         acckey: "",
-        seckey: ""
+        seckey: "",
     })
+    let svr = "http://localhost:8118/api"
+    if (process.env.REACT_APP_REMOTE) { //set this in .env file: REACT_APP_REMOTE=1
+        svr = "https://cjk-flasktest.herokuapp.com/api"
+    }
+    if (process.env.NODE_ENV !== 'development') {
+        svr = "https://cjk-flasktest.herokuapp.com/api"
+    }
+    const [server] = useState(svr)
     //Remember that updating state means we make a complete new copy and overwrite the exisiting state
     //Remember that React.useState on state objects requires that we copy the existing state upon each update (using the "spread" operator ...state) -- see below
 
@@ -24,13 +32,14 @@ function CredsForm(props) {
 	evt.preventDefault();
         alert(`Submitting ${state.acckey} and ${state.seckey}`)
 	
-        let server = "http://localhost:8118/api"
-        if (process.env.REACT_APP_REMOTE) { //set this in .env file: REACT_APP_REMOTE=1
-            server = "https://cjk-flasktest.herokuapp.com/api"
-	}
-        if (process.env.NODE_ENV !== 'development') {
-            server = "https://cjk-flasktest.herokuapp.com/api"
-	}
+        //let server = "http://localhost:8118/api"
+        //if (process.env.REACT_APP_REMOTE) { //set this in .env file: REACT_APP_REMOTE=1
+            //server = "https://cjk-flasktest.herokuapp.com/api"
+	//}
+        //if (process.env.NODE_ENV !== 'development') {
+            //server = "https://cjk-flasktest.herokuapp.com/api"
+	//}
+	//setServer(server)
 	console.log("server = "+server)
         const url = `${server}/keys`
 	const bd = JSON.stringify({ "acckey":state.acckey, "seckey":state.seckey })
@@ -48,12 +57,13 @@ function CredsForm(props) {
 		  alert('response: ' + data["MESSAGE"])
 	  }).catch((error) => console.log("SaveCreds saveCreds: Fetch Failure (is server up?): "+ error))
     }
+    
 
     //See this example on Creating Custom Hooks at  https://rangle.io/blog/simplifying-controlled-inputs-with-hooks/ to preclude the need to add a function handleChange for each onChange event
     return (
       <div> {/* JSX comments look like this */}
       {/*print out the NODE_ENV set by the server and our user defined REACT_APP_REMOTE variable value (no value means its undefined) */}
-      <h3>Server: {process.env.NODE_ENV}, REACT_APP_REMOTE = {process.env.REACT_APP_REMOTE} </h3>
+      <h3>Server: ({process.env.NODE_ENV}) target URI={server}</h3>
       <form onSubmit={saveCreds}>
         <label>
           Access Key:
