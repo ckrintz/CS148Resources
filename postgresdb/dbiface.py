@@ -2,7 +2,7 @@
     Author: Chandra Krintz, UCSB, ckrintz@cs.ucsb.edu, AppScale BSD license
     USAGE: python dbiface.py 169.231.XXX.YYY table_name postgres_user_name password
 '''
-import psycopg2, sys, argparse
+import psycopg2, sys, argparse, os
 from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -37,9 +37,17 @@ class DBobj(object):
 
     #constructor of a DBobj object
     #https://www.psycopg.org/docs/connection.html
-    def __init__(self, dbname, pwd, host='localhost',user='postgres'):
-        args = "dbname='{0}' user='{1}' host='{2}' password='{3}'".format(dbname,user,host,pwd)
-        try:
+    def __init__(self, dbname=None, url=None, pwd=None, host='localhost',user='postgres'):
+        if not url: #sanity check
+            if not dbname and not pwd:
+                raise Exception("Either url parameter {} or dbname and pwd must be set (dbname='{}')".format(url,dbname))
+
+        if url is not None:
+            args = url
+        else:
+            args = "dbname='{0}' user='{1}' host='{2}' password='{3}'".format(dbname,user,host,pwd)
+
+        try: 
             self.args = args
             self.conn = psycopg2.connect(args)
         except Exception as e:
@@ -139,13 +147,25 @@ def main():
     parser.add_argument('pwd',action='store',help='postgres user password')
     args = parser.parse_args()
     
-    #tests
-    db = DBobj(args.db,args.pwd,args.host,args.user)
+    #test connectivity to the DB by getting the version
+    db = DBobj(dbname=args.db,pwd=args.pwd,host=args.host,user=args.user)
     sql = 'SELECT version()'
     cur = db.execute_sql(sql)
     ver = cur.fetchone()
-    print('Postgres version test: {}'.format(ver))
+    print('Postgres version test using the names passed in on the command line: {}'.format(ver))
 
+    #test connectivity using the DB URL environment variable
+    url = os.getenv('DATABASE_URL') #returns None if non-existent key name
+    if url:
+        db = DBobj(url=url)
+        sql = 'SELECT version()'
+        cur = db.execute_sql(sql)
+        ver = cur.fetchone()
+        print('Postgres version test using DATABASE_URL environment variable, if set: {}'.format(ver))
+    else: 
+        print("DATABASE_URL is not set...")
+
+    #create, write, and read from tablename
     tablename = args.tablename
     table_exists = db.table_exists(tablename)
     print('Does the table already exist (True=Yes)? {}'.format(table_exists))
