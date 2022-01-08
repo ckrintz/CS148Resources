@@ -25,7 +25,7 @@ The default PORT that the development server uses is 8118 but you can change thi
 ```
 export PORT=8118
 cd backend
-python myapp.py
+python3 myapp.py
 ```
 ### Test
 Test that it works via
